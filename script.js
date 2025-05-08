@@ -15,6 +15,7 @@ const beginningBalanceSpan = document.getElementById('beginning-balance');
 const currentBalanceSpan = document.getElementById('current-balance');
 const addTransactionBtn = document.getElementById('add-transaction-btn');
 const transactionsList = document.getElementById('transactions');
+const categoryContainer = document.getElementById("category-container");
 
 updateUserDisplay();
 
@@ -55,6 +56,33 @@ function updateUserDisplay() {
     currentUserSpan.textContent = currentUser + (currentUser === "Anna" ? " 👧" : " 👦");
 }
 
+function renderCategoryInput() {
+    const type = document.getElementById("type").value;
+    if (type === "expense") {
+        categoryContainer.innerHTML = `
+            <select id="category">
+                <option value="Addiction">Addiction</option>
+                <option value="Debt">Debt</option>
+                <option value="Emergency Funds">Emergency Funds</option>
+                <option value="Food">Food</option>
+                <option value="Hangouts">Hangouts</option>
+                <option value="Health/Medical">Health/Medical</option>
+                <option value="Home">Home</option>
+                <option value="Normal Drinks">Normal Drinks</option>
+                <option value="Personal Enjoyment">Personal Enjoyment</option>
+                <option value="Pets">Pets</option>
+                <option value="Rent">Rent</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Utilities">Utilities</option>
+            </select>
+        `;
+    } else {
+        categoryContainer.innerHTML = `<input type="text" id="category" placeholder="Category">`;
+    }
+}
+
+document.getElementById("type").addEventListener("change", renderCategoryInput);
+
 async function loadBalances() {
     const { data, error } = await db.from('balances').select('*').eq('user_name', currentUser).single();
     if (data) {
@@ -66,19 +94,21 @@ async function loadBalances() {
 async function loadTransactions() {
     const transactionsTableBody = document.querySelector("#transactions tbody");
     transactionsTableBody.innerHTML = "";
-    
+
     const { data, error } = await db.from('transactions').select('*').eq('user_name', currentUser).order('date', { ascending: false });
-    
+
     if (data) {
         data.forEach(tx => {
             const row = document.createElement('tr');
 
             const dateCell = document.createElement('td');
-            dateCell.textContent = new Date(tx.date).toLocaleDateString();
+            dateCell.textContent = new Date(tx.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'});
             row.appendChild(dateCell);
 
             const categoryCell = document.createElement('td');
             categoryCell.textContent = tx.category;
+            categoryCell.contentEditable = "true";
+            categoryCell.addEventListener("blur", () => updateTransaction(tx.id, "category", categoryCell.textContent));
             row.appendChild(categoryCell);
 
             const incomeCell = document.createElement('td');
@@ -87,10 +117,14 @@ async function loadTransactions() {
             if (tx.type === "income") {
                 incomeCell.textContent = `$${tx.amount}`;
                 incomeCell.className = "income";
+                incomeCell.contentEditable = "true";
+                incomeCell.addEventListener("blur", () => updateTransaction(tx.id, "amount", parseFloat(incomeCell.textContent.replace("$",""))));
                 expenseCell.textContent = "-";
             } else {
                 expenseCell.textContent = `$${tx.amount}`;
                 expenseCell.className = "expense";
+                expenseCell.contentEditable = "true";
+                expenseCell.addEventListener("blur", () => updateTransaction(tx.id, "amount", parseFloat(expenseCell.textContent.replace("$",""))));
                 incomeCell.textContent = "-";
             }
 
@@ -99,7 +133,17 @@ async function loadTransactions() {
 
             const noteCell = document.createElement('td');
             noteCell.textContent = tx.note || "-";
+            noteCell.contentEditable = "true";
+            noteCell.addEventListener("blur", () => updateTransaction(tx.id, "note", noteCell.textContent));
             row.appendChild(noteCell);
+
+            const deleteCell = document.createElement('td');
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = "Delete";
+            deleteBtn.className = "delete-btn";
+            deleteBtn.addEventListener("click", () => deleteTransaction(tx.id));
+            deleteCell.appendChild(deleteBtn);
+            row.appendChild(deleteCell);
 
             transactionsTableBody.appendChild(row);
         });
@@ -107,6 +151,17 @@ async function loadTransactions() {
 
     updateCurrentBalance();
 }
+
+async function updateTransaction(id, field, value) {
+    await db.from('transactions').update({ [field]: value }).eq('id', id);
+    updateCurrentBalance();
+}
+
+async function deleteTransaction(id) {
+    await db.from('transactions').delete().eq('id', id);
+    loadTransactions();
+}
+
 
 
 async function updateCurrentBalance() {
@@ -127,5 +182,6 @@ async function updateCurrentBalance() {
     currentBalanceSpan.textContent = balance.toFixed(2);
 }
 
+renderCategoryInput();
 loadBalances();
 loadTransactions();
