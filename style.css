@@ -131,3 +131,29 @@ td[contenteditable="true"] {
     background-color: #e94e4e;
 }
 
+.user-btn {
+    background-color: #ddd;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: normal;
+    opacity: 0.6;
+}
+
+.user-btn.active {
+    background-color: #a2d2ff;
+    color: white;
+    font-weight: bold;
+    opacity: 1;
+}
+
+.anna-row {
+    background-color: #ffe6f0;
+}
+
+.husband-row {
+    background-color: #e6f0ff;
+}
+
