@@ -2,12 +2,13 @@ window.addEventListener("load", () => {
 
 // --- CONFIG ---
 const SUPABASE_URL = "https://oybyvwcpyegfeedepktt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95Ynl2d2NweWVnZmVlZGVwa3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2Njc4MjEsImV4cCI6MjA2MDI0MzgyMX0.pn9ka-JxwN_psXlqMKash9iDuP6lEsYvBCmOEJcFDP0"; // Don't forget to update if needed
+const SUPABASE_ANON_KEY = "your-real-anon-key-here"; // make sure this is real!
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- STATE ---
 let currentUser = localStorage.getItem('currentUser') || "Anna";
+let userButtons;
 
 // --- DOM ---
 const currentUserSpan = document.getElementById('current-user');
@@ -15,7 +16,8 @@ const beginningBalanceSpan = document.getElementById('beginning-balance');
 const currentBalanceSpan = document.getElementById('current-balance');
 const addTransactionBtn = document.getElementById('add-transaction-btn');
 const categoryContainer = document.getElementById("category-container");
-let userButtons;
+const addCategoryBtn = document.getElementById("add-category-btn");
+const categoriesList = document.getElementById("categories-list");
 
 // --- EVENTS ---
 addTransactionBtn.addEventListener('click', async () => {
@@ -41,7 +43,6 @@ addTransactionBtn.addEventListener('click', async () => {
     document.getElementById('note').value = "";
 });
 
-// --- FUNCTIONS ---
 function setupUserButtons() {
     userButtons = document.querySelectorAll('.user-btn');
 
@@ -68,26 +69,21 @@ function updateUserDisplay() {
     currentUserSpan.textContent = currentUser;
 }
 
-function renderCategoryInput() {
+// --- Dynamic Category Input ---
+async function renderCategoryInput() {
     const type = document.getElementById("type").value;
-    if (type === "expense") {
-        categoryContainer.innerHTML = `
-            <select id="category">
-                <option value="Addiction">Addiction</option>
-                <option value="Debt">Debt</option>
-                <option value="Emergency Funds">Emergency Funds</option>
-                <option value="Food">Food</option>
-                <option value="Hangouts">Hangouts</option>
-                <option value="Health/Medical">Health/Medical</option>
-                <option value="Home">Home</option>
-                <option value="Normal Drinks">Normal Drinks</option>
-                <option value="Personal Enjoyment">Personal Enjoyment</option>
-                <option value="Pets">Pets</option>
-                <option value="Rent">Rent</option>
-                <option value="Transportation">Transportation</option>
-                <option value="Utilities">Utilities</option>
-            </select>
-        `;
+    const { data: categories } = await db.from('categories').select('*').eq('type', type).order('category_name', { ascending: true });
+
+    if (categories.length > 0) {
+        categoryContainer.innerHTML = `<select id="category"></select>`;
+        const select = document.getElementById('category');
+
+        categories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.category_name;
+            opt.textContent = cat.category_name;
+            select.appendChild(opt);
+        });
     } else {
         categoryContainer.innerHTML = `<input type="text" id="category" placeholder="Category">`;
     }
@@ -95,6 +91,7 @@ function renderCategoryInput() {
 
 document.getElementById("type").addEventListener("change", renderCategoryInput);
 
+// --- Balances ---
 async function loadBalances() {
     if (currentUser === "Joint") {
         beginningBalanceSpan.textContent = "N/A";
@@ -218,9 +215,45 @@ async function updateCurrentBalance() {
     currentBalanceSpan.textContent = balance.toFixed(2);
 }
 
+// --- Category Management ---
+addCategoryBtn.addEventListener('click', async () => {
+    const type = document.getElementById("new-category-type").value;
+    const name = document.getElementById("new-category-name").value.trim();
+
+    if (!name) {
+        alert("Please enter category name");
+        return;
+    }
+
+    await db.from('categories').insert([{ type, category_name: name }]);
+    document.getElementById("new-category-name").value = "";
+    loadCategories();
+    renderCategoryInput(); // refresh category input
+});
+
+async function loadCategories() {
+    const { data } = await db.from('categories').select('*').order('type').order('category_name');
+    categoriesList.innerHTML = "";
+
+    (data || []).forEach(cat => {
+        const li = document.createElement('li');
+        li.textContent = `${cat.type.toUpperCase()}: ${cat.category_name}`;
+        const btn = document.createElement('button');
+        btn.textContent = "Delete";
+        btn.addEventListener('click', async () => {
+            await db.from('categories').delete().eq('id', cat.id);
+            loadCategories();
+            renderCategoryInput();
+        });
+        li.appendChild(btn);
+        categoriesList.appendChild(li);
+    });
+}
+
 setupUserButtons();
 renderCategoryInput();
 loadBalances();
 loadTransactions(currentUser);
+loadCategories();
 
 });
