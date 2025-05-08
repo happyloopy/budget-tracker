@@ -72,7 +72,12 @@ function updateUserDisplay() {
     } else {
         currentUserSpan.textContent = currentUser + (currentUser === "Anna" ? " 👧" : " 👦");
     }
+
+    // 🚨 ADD THIS → force refresh balances and transactions when user switched
+    loadBalances();
+    loadTransactions();
 }
+
 
 function renderCategoryInput() {
     const type = document.getElementById("type").value;
