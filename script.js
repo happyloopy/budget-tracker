@@ -16,21 +16,10 @@ const currentBalanceSpan = document.getElementById('current-balance');
 const addTransactionBtn = document.getElementById('add-transaction-btn');
 const transactionsList = document.getElementById('transactions');
 const categoryContainer = document.getElementById("category-container");
-const userButtons = document.querySelectorAll('.user-btn');
-
+let userButtons;
 updateUserDisplay();
 
 // --- EVENTS ---
-userButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        currentUser = btn.dataset.user;
-        localStorage.setItem('currentUser', currentUser);
-        updateUserDisplay();
-        loadBalances();
-        loadTransactions();
-    });
-});
-
 
 addTransactionBtn.addEventListener('click', async () => {
     const amount = parseFloat(document.getElementById('amount').value);
@@ -56,6 +45,20 @@ addTransactionBtn.addEventListener('click', async () => {
 });
 
 // --- FUNCTIONS ---
+function setupUserButtons() {
+    userButtons = document.querySelectorAll('.user-btn');
+    
+    userButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentUser = btn.dataset.user;
+            localStorage.setItem('currentUser', currentUser);
+            updateUserDisplay();
+            loadBalances();
+            loadTransactions();
+        });
+    });
+}
+
 function updateUserDisplay() {
     userButtons.forEach(btn => {
         if (btn.dataset.user === currentUser) {
@@ -230,7 +233,7 @@ async function updateCurrentBalance() {
 
     currentBalanceSpan.textContent = balance.toFixed(2);
 }
-
+setupUserButtons();
 renderCategoryInput();
 loadBalances();
 loadTransactions();
