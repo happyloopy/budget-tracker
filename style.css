@@ -101,3 +101,33 @@ th {
     font-weight: bold;
 }
 
+td[contenteditable="true"] {
+    background-color: #fdfdfd;
+    border: 1px solid #ddd;
+    outline: none;
+    cursor: text;
+}
+
+.income {
+    color: green;
+    font-weight: bold;
+}
+
+.expense {
+    color: red;
+    font-weight: bold;
+}
+
+.delete-btn {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: #e94e4e;
+}
+
