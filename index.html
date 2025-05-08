@@ -34,6 +34,19 @@
     <button id="add-transaction-btn">Add Transaction</button>
 </div>
 
+<div class="category-management">
+    <h3>Manage Categories</h3>
+    <select id="new-category-type">
+        <option value="expense">Expense</option>
+        <option value="income">Income</option>
+    </select>
+    <input type="text" id="new-category-name" placeholder="New Category Name">
+    <button id="add-category-btn">Add Category</button>
+
+    <h4>Existing Categories</h4>
+    <ul id="categories-list"></ul>
+</div>
+
 <div class="transaction-list" id="transaction-list">
     <h2>Transactions</h2>
     <table id="transactions">
