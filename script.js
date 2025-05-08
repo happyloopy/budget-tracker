@@ -191,16 +191,7 @@ async function loadTransactions(userFilter) {
 
         transactionsTableBody.appendChild(row);
     });
-
-    // Show total
-    const totalRow = document.createElement('tr');
-    const totalCell = document.createElement('td');
-    totalCell.colSpan = 7;
-    totalCell.style.fontWeight = "bold";
-    totalCell.textContent = `Total (filtered): $${totalAmount.toFixed(2)}`;
-    totalRow.appendChild(totalCell);
-    transactionsTableBody.appendChild(totalRow);
-
+    document.getElementById("filter-total").textContent = totalAmount.toFixed(2);
     updateCurrentBalance();
 }
 
@@ -232,6 +223,7 @@ async function updateCurrentBalance() {
 
     currentBalanceSpan.textContent = balance.toFixed(2);
 }
+
 
 document.getElementById("apply-filter").addEventListener("click", () => {
     currentCategoryFilter = document.getElementById("filter-category").value;
