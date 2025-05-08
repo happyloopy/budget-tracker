@@ -163,4 +163,53 @@ select:focus {
     background-color: #f9f9f9;
 }
 
+.categories-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.category-section {
+    background-color: #ffffff;
+    border: 2px solid #a2d2ff;
+    border-radius: 10px;
+    padding: 20px;
+    width: 300px;
+}
+
+.category-section h4 {
+    color: #a2d2ff;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.category-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.category-section li {
+    margin-bottom: 10px;
+    background-color: #f0f8ff;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.category-section button {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.category-section button:hover {
+    background-color: #e94e4e;
+}
+
 
