@@ -39,14 +39,24 @@
 
 <div class="filter-bar">
     <h3>Filter Transactions</h3>
-    <select id="filter-category">
-        <option value="">All Categories</option>
-    </select>
+    <div class="filter-categories-container">
+        <div class="filter-category-section">
+            <h4>Expense Categories</h4>
+            <div id="filter-category-expense" class="filter-category-list"></div>
+        </div>
+        <div class="filter-category-section">
+            <h4>Income Categories</h4>
+            <div id="filter-category-income" class="filter-category-list"></div>
+        </div>
+    </div>
+
     <input type="date" id="filter-date-from">
     <input type="date" id="filter-date-to">
     <button id="apply-filter">Apply Filter</button>
     <button id="clear-filter">Clear Filter</button>
-     <div class="filter-total">
+
+    <div class="filter-info"></div>
+    <div class="filter-total">
         <strong>Total (filtered):</strong> $<span id="filter-total">0.00</span>
     </div>
 </div>
