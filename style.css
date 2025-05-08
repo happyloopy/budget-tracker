@@ -436,6 +436,17 @@ select:focus {
     background-color: #ffa7c4;
 }
 
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-range span {
+    font-size: 1rem;
+    color: #666;
+}
+
 
 
 
