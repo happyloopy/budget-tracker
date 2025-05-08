@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Shrikhand&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f8ff;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-family: 'Shrikhand', cursive;
+    font-size: 3rem;
+    color: #a2d2ff;
+    margin-bottom: 20px;
+}
+
+.switch-user {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.balances {
+    margin-bottom: 30px;
+}
+
+.form-container {
+    margin-bottom: 30px;
+}
+
+input, select {
+    margin: 5px;
+    padding: 10px;
+    width: 200px;
+    border: 2px solid #a2d2ff;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #ffafcc;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ffa7c4;
+}
+
+.transaction-list {
+    margin-top: 30px;
+}
+
+#transactions li {
+    background-color: white;
+    margin: 10px auto;
+    padding: 10px;
+    border-radius: 10px;
+    width: 300px;
+    list-style: none;
+    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+    border: 2px solid #a2d2ff;
+}
+
+.anna-transaction {
+    border-color: #ffafcc;
+}
+
+.husband-transaction {
+    border-color: #a2d2ff;
+}

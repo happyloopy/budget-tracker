@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Budget Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <h1>🌸 Budget Tracker 🌸</h1>
+    <div class="switch-user">
+        Current User: <span id="current-user">Anna 👧</span>
+        <button id="switch-user-btn">Switch</button>
+    </div>
+
+    <div class="balances">
+        <h2>Beginning Balance: $<span id="beginning-balance">0</span></h2>
+        <h2>Current Balance: $<span id="current-balance">0</span></h2>
+    </div>
+
+    <div class="form-container">
+        <input type="number" id="amount" placeholder="Amount">
+        <select id="type">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+        </select>
+        <input type="text" id="category" placeholder="Category">
+        <input type="text" id="note" placeholder="Note (optional)">
+        <button id="add-transaction-btn">Add Transaction</button>
+    </div>
+
+    <div class="transaction-list" id="transaction-list">
+        <h2>Transactions</h2>
+        <ul id="transactions"></ul>
+    </div>
+</body>
+</html>
