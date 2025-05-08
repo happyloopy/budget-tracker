@@ -248,13 +248,15 @@ select:focus {
 }
 
 .filter-total {
+    font-style: italic;
+    font-weight: bold;
+    color: #ff87b2;
+    background-color: #fff0f5;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
     margin-top: 10px;
-    font-size: 1.2rem;
-    color: #444;
-}
-
-.filter-total strong {
-    color: #a2d2ff;
 }
 
 
