@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 // --- CONFIG ---
 const SUPABASE_URL = "https://oybyvwcpyegfeedepktt.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95Ynl2d2NweWVnZmVlZGVwa3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2Njc4MjEsImV4cCI6MjA2MDI0MzgyMX0.pn9ka-JxwN_psXlqMKash9iDuP6lEsYvBCmOEJcFDP0";
@@ -10,17 +12,14 @@ let currentUser = localStorage.getItem('currentUser') || "Anna";
 
 // --- DOM ---
 const currentUserSpan = document.getElementById('current-user');
-const switchUserBtn = document.getElementById('switch-user-btn');
 const beginningBalanceSpan = document.getElementById('beginning-balance');
 const currentBalanceSpan = document.getElementById('current-balance');
 const addTransactionBtn = document.getElementById('add-transaction-btn');
 const transactionsList = document.getElementById('transactions');
 const categoryContainer = document.getElementById("category-container");
 let userButtons;
-updateUserDisplay();
 
 // --- EVENTS ---
-
 addTransactionBtn.addEventListener('click', async () => {
     const amount = parseFloat(document.getElementById('amount').value);
     const type = document.getElementById('type').value;
@@ -47,7 +46,7 @@ addTransactionBtn.addEventListener('click', async () => {
 // --- FUNCTIONS ---
 function setupUserButtons() {
     userButtons = document.querySelectorAll('.user-btn');
-    
+
     userButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             currentUser = btn.dataset.user;
@@ -74,7 +73,6 @@ function updateUserDisplay() {
         currentUserSpan.textContent = currentUser + (currentUser === "Anna" ? " 👧" : " 👦");
     }
 }
-
 
 function renderCategoryInput() {
     const type = document.getElementById("type").value;
@@ -110,7 +108,7 @@ async function loadBalances() {
         return;
     }
 
-    const { data, error } = await db.from('balances').select('*').eq('user_name', currentUser).single();
+    const { data } = await db.from('balances').select('*').eq('user_name', currentUser).single();
     if (data) {
         beginningBalanceSpan.textContent = data.amount.toFixed(2);
     }
@@ -127,7 +125,7 @@ async function loadTransactions() {
         query = query.eq('user_name', currentUser);
     }
 
-    const { data, error } = await query;
+    const { data } = await query;
 
     if (data) {
         data.forEach(tx => {
@@ -140,13 +138,6 @@ async function loadTransactions() {
 
             const userCell = document.createElement('td');
             userCell.textContent = tx.user_name;
-
-            if (tx.user_name === "Anna") {
-                userCell.style.color = "#ffafcc";
-            } else if (tx.user_name === "Husband") {
-                userCell.style.color = "#a2d2ff";
-            }
-
             row.appendChild(userCell);
 
             const dateCell = document.createElement('td');
@@ -211,8 +202,8 @@ async function deleteTransaction(id) {
 }
 
 async function updateCurrentBalance() {
-    const { data: transactions } = await db.from('transactions').select('*').eq('user_name', currentUser);
-    
+    let { data: transactions } = await db.from('transactions').select('*').eq('user_name', currentUser);
+
     if (currentUser === "Joint") {
         const { data: all } = await db.from('transactions').select('*');
         transactions = all;
@@ -233,7 +224,10 @@ async function updateCurrentBalance() {
 
     currentBalanceSpan.textContent = balance.toFixed(2);
 }
+
 setupUserButtons();
 renderCategoryInput();
 loadBalances();
 loadTransactions();
+
+}); // END OF DOMContentLoaded
