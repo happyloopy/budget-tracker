@@ -21,7 +21,14 @@ updateUserDisplay();
 
 // --- EVENTS ---
 switchUserBtn.addEventListener('click', () => {
-    currentUser = (currentUser === "Anna") ? "Husband" : "Anna";
+    if (currentUser === "Anna") {
+        currentUser = "Husband";
+    } else if (currentUser === "Husband") {
+        currentUser = "Joint";
+    } else {
+        currentUser = "Anna";
+    }
+
     localStorage.setItem('currentUser', currentUser);
     updateUserDisplay();
     loadBalances();
@@ -53,7 +60,11 @@ addTransactionBtn.addEventListener('click', async () => {
 
 // --- FUNCTIONS ---
 function updateUserDisplay() {
-    currentUserSpan.textContent = currentUser + (currentUser === "Anna" ? " 👧" : " 👦");
+    if (currentUser === "Joint") {
+        currentUserSpan.textContent = "Joint 👫";
+    } else {
+        currentUserSpan.textContent = currentUser + (currentUser === "Anna" ? " 👧" : " 👦");
+    }
 }
 
 function renderCategoryInput() {
@@ -84,6 +95,12 @@ function renderCategoryInput() {
 document.getElementById("type").addEventListener("change", renderCategoryInput);
 
 async function loadBalances() {
+    if (currentUser === "Joint") {
+        beginningBalanceSpan.textContent = "N/A";
+        updateCurrentBalance();
+        return;
+    }
+
     const { data, error } = await db.from('balances').select('*').eq('user_name', currentUser).single();
     if (data) {
         beginningBalanceSpan.textContent = data.amount.toFixed(2);
@@ -95,14 +112,31 @@ async function loadTransactions() {
     const transactionsTableBody = document.querySelector("#transactions tbody");
     transactionsTableBody.innerHTML = "";
 
-    const { data, error } = await db.from('transactions').select('*').eq('user_name', currentUser).order('date', { ascending: false });
+    let query = db.from('transactions').select('*').order('date', { ascending: false });
+
+    if (currentUser !== "Joint") {
+        query = query.eq('user_name', currentUser);
+    }
+
+    const { data, error } = await query;
 
     if (data) {
         data.forEach(tx => {
             const row = document.createElement('tr');
 
+            const userCell = document.createElement('td');
+            userCell.textContent = tx.user_name;
+
+            if (tx.user_name === "Anna") {
+                userCell.style.color = "#ffafcc";
+            } else if (tx.user_name === "Husband") {
+                userCell.style.color = "#a2d2ff";
+            }
+
+            row.appendChild(userCell);
+
             const dateCell = document.createElement('td');
-            dateCell.textContent = new Date(tx.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'});
+            dateCell.textContent = new Date(tx.date).toLocaleDateString();
             row.appendChild(dateCell);
 
             const categoryCell = document.createElement('td');
@@ -162,10 +196,14 @@ async function deleteTransaction(id) {
     loadTransactions();
 }
 
-
-
 async function updateCurrentBalance() {
     const { data: transactions } = await db.from('transactions').select('*').eq('user_name', currentUser);
+    
+    if (currentUser === "Joint") {
+        const { data: all } = await db.from('transactions').select('*');
+        transactions = all;
+    }
+
     const { data: balanceRow } = await db.from('balances').select('*').eq('user_name', currentUser).single();
     let balance = balanceRow ? balanceRow.amount : 0;
 
