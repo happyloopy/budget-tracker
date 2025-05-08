@@ -16,24 +16,21 @@ const currentBalanceSpan = document.getElementById('current-balance');
 const addTransactionBtn = document.getElementById('add-transaction-btn');
 const transactionsList = document.getElementById('transactions');
 const categoryContainer = document.getElementById("category-container");
+const userButtons = document.querySelectorAll('.user-btn');
 
 updateUserDisplay();
 
 // --- EVENTS ---
-switchUserBtn.addEventListener('click', () => {
-    if (currentUser === "Anna") {
-        currentUser = "Husband";
-    } else if (currentUser === "Husband") {
-        currentUser = "Joint";
-    } else {
-        currentUser = "Anna";
-    }
-
-    localStorage.setItem('currentUser', currentUser);
-    updateUserDisplay();
-    loadBalances();
-    loadTransactions();
+userButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentUser = btn.dataset.user;
+        localStorage.setItem('currentUser', currentUser);
+        updateUserDisplay();
+        loadBalances();
+        loadTransactions();
+    });
 });
+
 
 addTransactionBtn.addEventListener('click', async () => {
     const amount = parseFloat(document.getElementById('amount').value);
@@ -60,12 +57,21 @@ addTransactionBtn.addEventListener('click', async () => {
 
 // --- FUNCTIONS ---
 function updateUserDisplay() {
+    userButtons.forEach(btn => {
+        if (btn.dataset.user === currentUser) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
     if (currentUser === "Joint") {
         currentUserSpan.textContent = "Joint 👫";
     } else {
         currentUserSpan.textContent = currentUser + (currentUser === "Anna" ? " 👧" : " 👦");
     }
 }
+
 
 function renderCategoryInput() {
     const type = document.getElementById("type").value;
@@ -123,6 +129,11 @@ async function loadTransactions() {
     if (data) {
         data.forEach(tx => {
             const row = document.createElement('tr');
+            if (tx.user_name === "Anna") {
+                row.classList.add("anna-row");
+            } else if (tx.user_name === "Husband") {
+                row.classList.add("husband-row");
+            }
 
             const userCell = document.createElement('td');
             userCell.textContent = tx.user_name;
