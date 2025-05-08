@@ -10,6 +10,10 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = localStorage.getItem('currentUser') || "Anna";
 let userButtons;
 
+let currentCategoryFilter = "";
+let currentDateFrom = "";
+let currentDateTo = "";
+
 // --- DOM ---
 const currentUserSpan = document.getElementById('current-user');
 const beginningBalanceSpan = document.getElementById('beginning-balance');
@@ -104,17 +108,32 @@ async function loadTransactions(userFilter) {
     transactionsTableBody.innerHTML = "";
 
     let query = db.from('transactions').select('*').order('date', { ascending: false });
+
     if (userFilter !== "Joint") {
         query = query.eq('user_name', userFilter);
     }
 
+    if (currentCategoryFilter) {
+        query = query.eq('category', currentCategoryFilter);
+    }
+
+    if (currentDateFrom) {
+        query = query.gte('date', currentDateFrom);
+    }
+
+    if (currentDateTo) {
+        query = query.lte('date', currentDateTo);
+    }
+
     const { data } = await query;
 
-    (data || []).forEach(async tx => {
+    let totalAmount = 0;
+
+    (data || []).forEach(tx => {
         const row = document.createElement('tr');
 
         if (tx.user_name === "Anna") row.classList.add("anna-row");
-        if (tx.user_name === "Husband") row.classList.add("husband-row");
+        else if (tx.user_name === "Husband") row.classList.add("husband-row");
 
         const userCell = document.createElement('td');
         userCell.textContent = tx.user_name;
@@ -125,22 +144,7 @@ async function loadTransactions(userFilter) {
         row.appendChild(dateCell);
 
         const categoryCell = document.createElement('td');
-        const { data: validCategories } = await db.from('categories').select('*').eq('type', tx.type).order('category_name', { ascending: true });
-        const select = document.createElement('select');
-
-        (validCategories || []).forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat.category_name;
-            option.textContent = cat.category_name;
-            if (cat.category_name === tx.category) option.selected = true;
-            select.appendChild(option);
-        });
-
-        select.addEventListener('change', () => {
-            updateTransaction(tx.id, "category", select.value);
-        });
-
-        categoryCell.appendChild(select);
+        categoryCell.textContent = tx.category;
         row.appendChild(categoryCell);
 
         const incomeCell = document.createElement('td');
@@ -149,15 +153,13 @@ async function loadTransactions(userFilter) {
         if (tx.type === "income") {
             incomeCell.textContent = `$${tx.amount}`;
             incomeCell.className = "income";
-            incomeCell.contentEditable = "true";
-            incomeCell.addEventListener("blur", () => updateTransaction(tx.id, "amount", parseFloat(incomeCell.textContent.replace("$",""))));
             expenseCell.textContent = "-";
+            totalAmount += tx.amount;
         } else {
             expenseCell.textContent = `$${tx.amount}`;
             expenseCell.className = "expense";
-            expenseCell.contentEditable = "true";
-            expenseCell.addEventListener("blur", () => updateTransaction(tx.id, "amount", parseFloat(expenseCell.textContent.replace("$",""))));
             incomeCell.textContent = "-";
+            totalAmount -= tx.amount;
         }
 
         row.appendChild(incomeCell);
@@ -165,14 +167,11 @@ async function loadTransactions(userFilter) {
 
         const noteCell = document.createElement('td');
         noteCell.textContent = tx.note || "-";
-        noteCell.contentEditable = "true";
-        noteCell.addEventListener("blur", () => updateTransaction(tx.id, "note", noteCell.textContent));
         row.appendChild(noteCell);
 
         const deleteCell = document.createElement('td');
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = "Delete";
-        deleteBtn.className = "delete-btn";
         deleteBtn.addEventListener("click", () => deleteTransaction(tx.id));
         deleteCell.appendChild(deleteBtn);
         row.appendChild(deleteCell);
@@ -180,8 +179,18 @@ async function loadTransactions(userFilter) {
         transactionsTableBody.appendChild(row);
     });
 
+    // Show total
+    const totalRow = document.createElement('tr');
+    const totalCell = document.createElement('td');
+    totalCell.colSpan = 7;
+    totalCell.style.fontWeight = "bold";
+    totalCell.textContent = `Total (filtered): $${totalAmount.toFixed(2)}`;
+    totalRow.appendChild(totalCell);
+    transactionsTableBody.appendChild(totalRow);
+
     updateCurrentBalance();
 }
+
 
 async function updateTransaction(id, field, value) {
     await db.from('transactions').update({ [field]: value }).eq('id', id);
@@ -211,6 +220,40 @@ async function updateCurrentBalance() {
     currentBalanceSpan.textContent = balance.toFixed(2);
 }
 
+document.getElementById("apply-filter").addEventListener("click", () => {
+    currentCategoryFilter = document.getElementById("filter-category").value;
+    currentDateFrom = document.getElementById("filter-date-from").value;
+    currentDateTo = document.getElementById("filter-date-to").value;
+    loadTransactions(currentUser);
+});
+
+document.getElementById("clear-filter").addEventListener("click", () => {
+    currentCategoryFilter = "";
+    currentDateFrom = "";
+    currentDateTo = "";
+
+    document.getElementById("filter-category").value = "";
+    document.getElementById("filter-date-from").value = "";
+    document.getElementById("filter-date-to").value = "";
+
+    loadTransactions(currentUser);
+});
+
+async function refreshCategoryFilter() {
+    const { data: allCategories } = await db.from('categories').select('*').order('category_name');
+    const filterSelect = document.getElementById("filter-category");
+
+    filterSelect.innerHTML = `<option value="">All Categories</option>`;
+
+    (allCategories || []).forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.category_name;
+        opt.textContent = cat.category_name;
+        filterSelect.appendChild(opt);
+    });
+}
+
+refreshCategoryFilter();
 setupUserButtons();
 renderCategoryInput();
 loadBalances();
