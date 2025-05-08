@@ -15,7 +15,6 @@ const currentUserSpan = document.getElementById('current-user');
 const beginningBalanceSpan = document.getElementById('beginning-balance');
 const currentBalanceSpan = document.getElementById('current-balance');
 const addTransactionBtn = document.getElementById('add-transaction-btn');
-const transactionsList = document.getElementById('transactions');
 const categoryContainer = document.getElementById("category-container");
 let userButtons;
 
@@ -36,7 +35,7 @@ addTransactionBtn.addEventListener('click', async () => {
     ]);
 
     await loadBalances();
-    await loadTransactions();
+    await loadTransactions(currentUser);
 
     document.getElementById('amount').value = "";
     document.getElementById('category').value = "";
@@ -53,7 +52,7 @@ function setupUserButtons() {
             localStorage.setItem('currentUser', currentUser);
             updateUserDisplay();
             loadBalances();
-            loadTransactions();
+            loadTransactions(currentUser);
         });
     });
 }
@@ -72,12 +71,7 @@ function updateUserDisplay() {
     } else {
         currentUserSpan.textContent = currentUser + (currentUser === "Anna" ? " 👧" : " 👦");
     }
-
-    // 🚨 ADD THIS → force refresh balances and transactions when user switched
-    loadBalances();
-    loadTransactions();
 }
-
 
 function renderCategoryInput() {
     const type = document.getElementById("type").value;
@@ -120,15 +114,14 @@ async function loadBalances() {
     updateCurrentBalance();
 }
 
-async function loadTransactions() {
+async function loadTransactions(userFilter) {
     const transactionsTableBody = document.querySelector("#transactions tbody");
     transactionsTableBody.innerHTML = "";
 
     let query = db.from('transactions').select('*').order('date', { ascending: false });
 
-    // THIS MUST STAY (this is the filter)
-    if (currentUser !== "Joint") {
-        query = query.eq('user_name', currentUser);
+    if (userFilter !== "Joint") {
+        query = query.eq('user_name', userFilter);
     }
 
     const { data } = await query;
@@ -198,7 +191,6 @@ async function loadTransactions() {
     updateCurrentBalance();
 }
 
-
 async function updateTransaction(id, field, value) {
     await db.from('transactions').update({ [field]: value }).eq('id', id);
     updateCurrentBalance();
@@ -206,7 +198,7 @@ async function updateTransaction(id, field, value) {
 
 async function deleteTransaction(id) {
     await db.from('transactions').delete().eq('id', id);
-    loadTransactions();
+    loadTransactions(currentUser);
 }
 
 async function updateCurrentBalance() {
@@ -236,6 +228,6 @@ async function updateCurrentBalance() {
 setupUserButtons();
 renderCategoryInput();
 loadBalances();
-loadTransactions();
+loadTransactions(currentUser);
 
-}); // END OF DOMContentLoaded
+}); // END DOMContentLoaded
