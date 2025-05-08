@@ -294,17 +294,15 @@ select:focus {
     color: #888;
 }
 
-.category-section label {
+#filter-category-expense label,
+#filter-category-income label {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 8px;
-    cursor: pointer;
+    padding: 5px 0;
 }
 
-.category-section input[type="checkbox"] {
-    transform: scale(1.2);
-}
+
 
 
 
