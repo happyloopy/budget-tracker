@@ -64,18 +64,50 @@ async function loadBalances() {
 }
 
 async function loadTransactions() {
-    transactionsList.innerHTML = "";
-    const { data, error } = await db.from('transactions').select('*').eq('user_name', currentUser);
+    const transactionsTableBody = document.querySelector("#transactions tbody");
+    transactionsTableBody.innerHTML = "";
+    
+    const { data, error } = await db.from('transactions').select('*').eq('user_name', currentUser).order('date', { ascending: false });
+    
     if (data) {
         data.forEach(tx => {
-            const li = document.createElement('li');
-            li.className = (tx.user_name === "Anna") ? 'anna-transaction' : 'husband-transaction';
-            li.textContent = `${tx.type === 'expense' ? '-' : '+'}$${tx.amount} | ${tx.category} | ${tx.note || ''}`;
-            transactionsList.appendChild(li);
+            const row = document.createElement('tr');
+
+            const dateCell = document.createElement('td');
+            dateCell.textContent = new Date(tx.date).toLocaleDateString();
+            row.appendChild(dateCell);
+
+            const categoryCell = document.createElement('td');
+            categoryCell.textContent = tx.category;
+            row.appendChild(categoryCell);
+
+            const incomeCell = document.createElement('td');
+            const expenseCell = document.createElement('td');
+
+            if (tx.type === "income") {
+                incomeCell.textContent = `$${tx.amount}`;
+                incomeCell.className = "income";
+                expenseCell.textContent = "-";
+            } else {
+                expenseCell.textContent = `$${tx.amount}`;
+                expenseCell.className = "expense";
+                incomeCell.textContent = "-";
+            }
+
+            row.appendChild(incomeCell);
+            row.appendChild(expenseCell);
+
+            const noteCell = document.createElement('td');
+            noteCell.textContent = tx.note || "-";
+            row.appendChild(noteCell);
+
+            transactionsTableBody.appendChild(row);
         });
     }
+
     updateCurrentBalance();
 }
+
 
 async function updateCurrentBalance() {
     const { data: transactions } = await db.from('transactions').select('*').eq('user_name', currentUser);
