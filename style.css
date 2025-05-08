@@ -347,6 +347,62 @@ select:focus {
     color: #ff87b2;
 }
 
+.summary-container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #a2d2ff;
+    width: 80%;
+    margin: 20px auto;
+}
+
+.summary-container h2 {
+    color: #a2d2ff;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.summary-table th, .summary-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.summary-table th {
+    background-color: #a2d2ff;
+    color: white;
+}
+
+.summary-income {
+    color: green;
+    font-weight: bold;
+}
+
+.summary-expense {
+    color: red;
+    font-weight: bold;
+}
+
+.export-btn {
+    background-color: #ffafcc;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.export-btn:hover {
+    background-color: #ffa7c4;
+}
+
+
 
 
 
