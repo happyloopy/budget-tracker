@@ -334,6 +334,19 @@ select:focus {
     transform: scale(1);
 }
 
+#beginning-balance[contenteditable="true"] {
+    border-bottom: 2px dashed #a2d2ff;
+    cursor: text;
+    padding: 2px 5px;
+    display: inline-block;
+}
+
+#beginning-balance:focus {
+    outline: none;
+    background-color: #fffafc;
+    color: #ff87b2;
+}
+
 
 
 
