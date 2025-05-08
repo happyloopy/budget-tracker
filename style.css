@@ -73,3 +73,31 @@ button:hover {
 .husband-transaction {
     border-color: #a2d2ff;
 }
+
+table {
+    margin: 0 auto;
+    width: 80%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background-color: #a2d2ff;
+    color: white;
+}
+
+.income {
+    color: green;
+    font-weight: bold;
+}
+
+.expense {
+    color: red;
+    font-weight: bold;
+}
+
