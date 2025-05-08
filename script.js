@@ -2,8 +2,7 @@ window.addEventListener("load", () => {
 
 // --- CONFIG ---
 const SUPABASE_URL = "https://oybyvwcpyegfeedepktt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95Ynl2d2NweWVnZmVlZGVwa3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2Njc4MjEsImV4cCI6MjA2MDI0MzgyMX0.pn9ka-JxwN_psXlqMKash9iDuP6lEsYvBCmOEJcFDP0";
-
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE"; // Don't forget to update if needed
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -66,11 +65,7 @@ function updateUserDisplay() {
         }
     });
 
-    if (currentUser === "Joint") {
-        currentUserSpan.textContent = "Joint 👫";
-    } else {
-        currentUserSpan.textContent = currentUser + (currentUser === "Anna" ? " 👧" : " 👦");
-    }
+    currentUserSpan.textContent = currentUser;
 }
 
 function renderCategoryInput() {
@@ -126,7 +121,7 @@ async function loadTransactions(userFilter) {
 
     const { data } = await query;
 
-    (data ?? []).forEach(tx => {
+    (data || []).forEach(tx => {
         const row = document.createElement('tr');
 
         if (tx.user_name === "Anna") {
@@ -185,10 +180,9 @@ async function loadTransactions(userFilter) {
 
         transactionsTableBody.appendChild(row);
     });
-    
+
     updateCurrentBalance();
 }
-
 
 async function updateTransaction(id, field, value) {
     await db.from('transactions').update({ [field]: value }).eq('id', id);
@@ -229,4 +223,4 @@ renderCategoryInput();
 loadBalances();
 loadTransactions(currentUser);
 
-}); // END DOMContentLoaded
+});
