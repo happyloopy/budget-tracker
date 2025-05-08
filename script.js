@@ -115,6 +115,7 @@ async function loadBalances() {
 }
 
 async function loadTransactions(userFilter) {
+async function loadTransactions(userFilter) {
     const transactionsTableBody = document.querySelector("#transactions tbody");
     transactionsTableBody.innerHTML = "";
 
@@ -125,6 +126,9 @@ async function loadTransactions(userFilter) {
     if (currentDateTo) query = query.lte('date', currentDateTo);
 
     const { data } = await query;
+
+    const { data: allCategories } = await db.from('categories').select('*');
+
     let totalAmount = 0;
 
     (data || []).forEach(tx => {
@@ -132,26 +136,76 @@ async function loadTransactions(userFilter) {
         if (tx.user_name === "Anna") row.classList.add("anna-row");
         else if (tx.user_name === "Husband") row.classList.add("husband-row");
 
-        row.innerHTML = `
-            <td>${tx.user_name}</td>
-            <td><input type="date" value="${new Date(tx.date).toISOString().split('T')[0]}"></td>
-            <td>${tx.category}</td>
-            <td>${tx.type === "income" ? `$${tx.amount}` : "-"}</td>
-            <td>${tx.type === "expense" ? `$${tx.amount}` : "-"}</td>
-            <td>${tx.note || "-"}</td>
-            <td><button class="delete-btn">Delete</button></td>
-        `;
+        const userCell = document.createElement('td');
+        userCell.textContent = tx.user_name;
+        row.appendChild(userCell);
 
-        row.querySelector("input").addEventListener('change', (e) => {
-            updateTransaction(tx.id, "date", e.target.value);
+        const dateCell = document.createElement('td');
+        const dateInput = document.createElement('input');
+        dateInput.type = "date";
+        dateInput.value = new Date(tx.date).toISOString().split('T')[0];
+        dateInput.addEventListener('change', () => updateTransaction(tx.id, "date", dateInput.value));
+        dateCell.appendChild(dateInput);
+        row.appendChild(dateCell);
+
+        // --- Category dropdown (editable)
+        const categoryCell = document.createElement('td');
+        const categorySelect = document.createElement('select');
+
+        const filteredCategories = allCategories.filter(cat => cat.type === tx.type);
+        filteredCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.category_name;
+            option.textContent = cat.category_name;
+            if (cat.category_name === tx.category) option.selected = true;
+            categorySelect.appendChild(option);
         });
 
-        row.querySelector(".delete-btn").addEventListener('click', () => {
-            deleteTransaction(tx.id);
-        });
+        categorySelect.addEventListener('change', () => updateTransaction(tx.id, "category", categorySelect.value));
+        categoryCell.appendChild(categorySelect);
+        row.appendChild(categoryCell);
 
-        if (tx.type === "income") totalAmount += tx.amount;
-        else totalAmount -= tx.amount;
+        // --- Amount editable
+        const incomeCell = document.createElement('td');
+        const expenseCell = document.createElement('td');
+
+        if (tx.type === "income") {
+            incomeCell.textContent = tx.amount.toFixed(2);
+            incomeCell.className = "income";
+            incomeCell.contentEditable = "true";
+            incomeCell.addEventListener('blur', () => {
+                updateTransaction(tx.id, "amount", parseFloat(incomeCell.textContent));
+            });
+            expenseCell.textContent = "-";
+            totalAmount += tx.amount;
+        } else {
+            expenseCell.textContent = tx.amount.toFixed(2);
+            expenseCell.className = "expense";
+            expenseCell.contentEditable = "true";
+            expenseCell.addEventListener('blur', () => {
+                updateTransaction(tx.id, "amount", parseFloat(expenseCell.textContent));
+            });
+            incomeCell.textContent = "-";
+            totalAmount -= tx.amount;
+        }
+
+        row.appendChild(incomeCell);
+        row.appendChild(expenseCell);
+
+        const noteCell = document.createElement('td');
+        noteCell.textContent = tx.note || "-";
+        noteCell.contentEditable = "true";
+        noteCell.addEventListener('blur', () => {
+            updateTransaction(tx.id, "note", noteCell.textContent);
+        });
+        row.appendChild(noteCell);
+
+        const deleteCell = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener('click', () => deleteTransaction(tx.id));
+        deleteCell.appendChild(deleteBtn);
+        row.appendChild(deleteCell);
 
         transactionsTableBody.appendChild(row);
     });
@@ -162,6 +216,7 @@ async function loadTransactions(userFilter) {
 
     updateCurrentBalance();
 }
+
 
 async function updateTransaction(id, field, value) {
     await db.from('transactions').update({ [field]: value }).eq('id', id);
