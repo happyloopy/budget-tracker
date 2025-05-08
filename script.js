@@ -126,70 +126,69 @@ async function loadTransactions(userFilter) {
 
     const { data } = await query;
 
-    if (data) {
-        data.forEach(tx => {
-            const row = document.createElement('tr');
+    **(data ?? []).forEach(tx => {**
+        const row = document.createElement('tr');
 
-            if (tx.user_name === "Anna") {
-                row.classList.add("anna-row");
-            } else if (tx.user_name === "Husband") {
-                row.classList.add("husband-row");
-            }
+        if (tx.user_name === "Anna") {
+            row.classList.add("anna-row");
+        } else if (tx.user_name === "Husband") {
+            row.classList.add("husband-row");
+        }
 
-            const userCell = document.createElement('td');
-            userCell.textContent = tx.user_name;
-            row.appendChild(userCell);
+        const userCell = document.createElement('td');
+        userCell.textContent = tx.user_name;
+        row.appendChild(userCell);
 
-            const dateCell = document.createElement('td');
-            dateCell.textContent = new Date(tx.date).toLocaleDateString();
-            row.appendChild(dateCell);
+        const dateCell = document.createElement('td');
+        dateCell.textContent = new Date(tx.date).toLocaleDateString();
+        row.appendChild(dateCell);
 
-            const categoryCell = document.createElement('td');
-            categoryCell.textContent = tx.category;
-            categoryCell.contentEditable = "true";
-            categoryCell.addEventListener("blur", () => updateTransaction(tx.id, "category", categoryCell.textContent));
-            row.appendChild(categoryCell);
+        const categoryCell = document.createElement('td');
+        categoryCell.textContent = tx.category;
+        categoryCell.contentEditable = "true";
+        categoryCell.addEventListener("blur", () => updateTransaction(tx.id, "category", categoryCell.textContent));
+        row.appendChild(categoryCell);
 
-            const incomeCell = document.createElement('td');
-            const expenseCell = document.createElement('td');
+        const incomeCell = document.createElement('td');
+        const expenseCell = document.createElement('td');
 
-            if (tx.type === "income") {
-                incomeCell.textContent = `$${tx.amount}`;
-                incomeCell.className = "income";
-                incomeCell.contentEditable = "true";
-                incomeCell.addEventListener("blur", () => updateTransaction(tx.id, "amount", parseFloat(incomeCell.textContent.replace("$",""))));
-                expenseCell.textContent = "-";
-            } else {
-                expenseCell.textContent = `$${tx.amount}`;
-                expenseCell.className = "expense";
-                expenseCell.contentEditable = "true";
-                expenseCell.addEventListener("blur", () => updateTransaction(tx.id, "amount", parseFloat(expenseCell.textContent.replace("$",""))));
-                incomeCell.textContent = "-";
-            }
+        if (tx.type === "income") {
+            incomeCell.textContent = `$${tx.amount}`;
+            incomeCell.className = "income";
+            incomeCell.contentEditable = "true";
+            incomeCell.addEventListener("blur", () => updateTransaction(tx.id, "amount", parseFloat(incomeCell.textContent.replace("$",""))));
+            expenseCell.textContent = "-";
+        } else {
+            expenseCell.textContent = `$${tx.amount}`;
+            expenseCell.className = "expense";
+            expenseCell.contentEditable = "true";
+            expenseCell.addEventListener("blur", () => updateTransaction(tx.id, "amount", parseFloat(expenseCell.textContent.replace("$",""))));
+            incomeCell.textContent = "-";
+        }
 
-            row.appendChild(incomeCell);
-            row.appendChild(expenseCell);
+        row.appendChild(incomeCell);
+        row.appendChild(expenseCell);
 
-            const noteCell = document.createElement('td');
-            noteCell.textContent = tx.note || "-";
-            noteCell.contentEditable = "true";
-            noteCell.addEventListener("blur", () => updateTransaction(tx.id, "note", noteCell.textContent));
-            row.appendChild(noteCell);
+        const noteCell = document.createElement('td');
+        noteCell.textContent = tx.note || "-";
+        noteCell.contentEditable = "true";
+        noteCell.addEventListener("blur", () => updateTransaction(tx.id, "note", noteCell.textContent));
+        row.appendChild(noteCell);
 
-            const deleteCell = document.createElement('td');
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = "Delete";
-            deleteBtn.className = "delete-btn";
-            deleteBtn.addEventListener("click", () => deleteTransaction(tx.id));
-            deleteCell.appendChild(deleteBtn);
-            row.appendChild(deleteCell);
+        const deleteCell = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "delete-btn";
+        deleteBtn.addEventListener("click", () => deleteTransaction(tx.id));
+        deleteCell.appendChild(deleteBtn);
+        row.appendChild(deleteCell);
 
-            transactionsTableBody.appendChild(row);
-        });
-    }
-
+        transactionsTableBody.appendChild(row);
+    });
+    
     updateCurrentBalance();
 }
+
 
 async function updateTransaction(id, field, value) {
     await db.from('transactions').update({ [field]: value }).eq('id', id);
