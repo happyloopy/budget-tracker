@@ -16,18 +16,27 @@
 
 <div class="summary-container">
     <h2>Filter Summary</h2>
-    <select id="user-filter">
-        <option value="">All Users</option>
-        <option value="Anna">Anna</option>
-        <option value="Husband">Husband</option>
-        <option value="Joint">Joint</option>
-    </select>
 
-    <input type="date" id="from-date"> to
-    <input type="date" id="to-date">
+    <div class="filter-controls">
+        <select id="user-filter">
+            <option value="All">All Users</option>
+            <option value="Anna">Anna</option>
+            <option value="Husband">Husband</option>
+            <option value="Joint">Joint</option>
+        </select>
 
-    <button id="load-summary">Load Summary</button>
-    <button id="export-csv" class="export-btn">Export CSV</button>
+        <select id="summary-mode">
+            <option value="custom">Custom Range</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+        </select>
+
+        <input type="date" id="summary-date-from"> to 
+        <input type="date" id="summary-date-to">
+
+        <button id="load-summary">Load Summary</button>
+        <button id="export-csv" class="export-btn">Export CSV</button>
+    </div>
 
     <h3>Summary Results</h3>
     <table class="summary-table" id="summary-table">
