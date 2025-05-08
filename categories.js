@@ -26,22 +26,32 @@ addCategoryBtn.addEventListener('click', async () => {
 
 async function loadCategories() {
     const { data } = await db.from('categories').select('*').order('type').order('category_name');
-    categoriesList.innerHTML = "";
+    const expenseList = document.getElementById("expense-categories-list");
+    const incomeList = document.getElementById("income-categories-list");
+
+    expenseList.innerHTML = "";
+    incomeList.innerHTML = "";
 
     (data || []).forEach(cat => {
         const li = document.createElement('li');
-        li.textContent = `${cat.type.toUpperCase()}: ${cat.category_name}`;
+        li.textContent = cat.category_name;
+
         const btn = document.createElement('button');
         btn.textContent = "Delete";
-        btn.className = "delete-btn";
         btn.addEventListener('click', async () => {
             await db.from('categories').delete().eq('id', cat.id);
             loadCategories();
         });
         li.appendChild(btn);
-        categoriesList.appendChild(li);
+
+        if (cat.type === "expense") {
+            expenseList.appendChild(li);
+        } else {
+            incomeList.appendChild(li);
+        }
     });
 }
+
 
 loadCategories();
 
