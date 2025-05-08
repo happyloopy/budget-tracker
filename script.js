@@ -115,7 +115,6 @@ async function loadBalances() {
 }
 
 async function loadTransactions(userFilter) {
-async function loadTransactions(userFilter) {
     const transactionsTableBody = document.querySelector("#transactions tbody");
     transactionsTableBody.innerHTML = "";
 
