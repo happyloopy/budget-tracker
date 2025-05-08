@@ -11,7 +11,7 @@
 <body>
     <h1>📦 Category Manager 📦</h1>
 
-    <p><a href="index.html">← Back to Budget Tracker</a></p>
+    <p><a href="index.html" target="_blank">← Back to Budget Tracker</a></p>
 
     <div class="form-container">
         <h3>Add New Category</h3>
@@ -23,9 +23,16 @@
         <button id="add-category-btn">Add Category</button>
     </div>
 
-    <div class="transaction-list">
-        <h3>Existing Categories</h3>
-        <ul id="categories-list"></ul>
+    <div class="categories-container">
+        <div class="category-section">
+            <h4>Expense Categories</h4>
+            <ul id="expense-categories-list"></ul>
+        </div>
+
+        <div class="category-section">
+            <h4>Income Categories</h4>
+            <ul id="income-categories-list"></ul>
+        </div>
     </div>
 
 </body>
