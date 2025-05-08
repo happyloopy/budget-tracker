@@ -20,20 +20,46 @@
         <h2>Current Balance: $<span id="current-balance">0</span></h2>
     </div>
 
-    <div class="form-container">
-        <input type="number" id="amount" placeholder="Amount">
-        <select id="type">
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-        </select>
-        <input type="text" id="category" placeholder="Category">
-        <input type="text" id="note" placeholder="Note (optional)">
-        <button id="add-transaction-btn">Add Transaction</button>
-    </div>
+<div class="form-container">
+    <input type="number" id="amount" placeholder="Amount">
+    <select id="type">
+        <option value="expense">Expense</option>
+        <option value="income">Income</option>
+    </select>
+    <select id="category">
+        <option value="Addiction">Addiction</option>
+        <option value="Debt">Debt</option>
+        <option value="Emergency Funds">Emergency Funds</option>
+        <option value="Food">Food</option>
+        <option value="Hangouts">Hangouts</option>
+        <option value="Health/Medical">Health/Medical</option>
+        <option value="Home">Home</option>
+        <option value="Normal Drinks">Normal Drinks</option>
+        <option value="Personal Enjoyment">Personal Enjoyment</option>
+        <option value="Pets">Pets</option>
+        <option value="Rent">Rent</option>
+        <option value="Transportation">Transportation</option>
+        <option value="Utilities">Utilities</option>
+    </select>
+    <input type="text" id="note" placeholder="Note (optional)">
+    <button id="add-transaction-btn">Add Transaction</button>
+</div>
 
-    <div class="transaction-list" id="transaction-list">
-        <h2>Transactions</h2>
-        <ul id="transactions"></ul>
-    </div>
+<div class="transaction-list" id="transaction-list">
+    <h2>Transactions</h2>
+    <table id="transactions">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Income ($)</th>
+                <th>Expense ($)</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
 </body>
 </html>
