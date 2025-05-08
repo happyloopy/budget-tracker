@@ -126,7 +126,7 @@ async function loadTransactions(userFilter) {
 
     const { data } = await query;
 
-    **(data ?? []).forEach(tx => {**
+    (data ?? []).forEach(tx => {
         const row = document.createElement('tr');
 
         if (tx.user_name === "Anna") {
