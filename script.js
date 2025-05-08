@@ -236,7 +236,8 @@ async function updateCurrentBalance() {
 
 
 document.getElementById("apply-filter").addEventListener("click", () => {
-    const checkboxes = document.querySelectorAll("#filter-category input[type='checkbox']");
+    const checkboxes = document.querySelectorAll("#filter-category-expense input[type='checkbox'], #filter-category-income input[type='checkbox']");
+    
     currentCategoryFilter = Array.from(checkboxes)
         .filter(cb => cb.checked)
         .map(cb => cb.value);
@@ -249,12 +250,13 @@ document.getElementById("apply-filter").addEventListener("click", () => {
 
 
 
+
 document.getElementById("clear-filter").addEventListener("click", () => {
     currentCategoryFilter = [];
     currentDateFrom = "";
     currentDateTo = "";
 
-    const checkboxes = document.querySelectorAll("#filter-category input[type='checkbox']");
+    const checkboxes = document.querySelectorAll("#filter-category-expense input[type='checkbox'], #filter-category-income input[type='checkbox']");
     checkboxes.forEach(cb => cb.checked = false);
 
     document.getElementById("filter-date-from").value = "";
