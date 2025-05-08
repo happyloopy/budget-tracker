@@ -121,6 +121,7 @@ async function loadTransactions() {
 
     let query = db.from('transactions').select('*').order('date', { ascending: false });
 
+    // THIS MUST STAY (this is the filter)
     if (currentUser !== "Joint") {
         query = query.eq('user_name', currentUser);
     }
@@ -130,6 +131,7 @@ async function loadTransactions() {
     if (data) {
         data.forEach(tx => {
             const row = document.createElement('tr');
+
             if (tx.user_name === "Anna") {
                 row.classList.add("anna-row");
             } else if (tx.user_name === "Husband") {
@@ -190,6 +192,7 @@ async function loadTransactions() {
 
     updateCurrentBalance();
 }
+
 
 async function updateTransaction(id, field, value) {
     await db.from('transactions').update({ [field]: value }).eq('id', id);
