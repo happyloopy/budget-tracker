@@ -259,5 +259,40 @@ select:focus {
     margin-top: 10px;
 }
 
+.filter-categories-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 20px;
+}
+
+.filter-category-section {
+    background-color: #fff;
+    border: 2px solid #a2d2ff;
+    border-radius: 10px;
+    padding: 10px;
+    width: 200px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.filter-category-section h4 {
+    color: #a2d2ff;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.filter-category-list label {
+    display: block;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.filter-info {
+    margin-top: 10px;
+    font-style: italic;
+    color: #888;
+}
+
 
 
