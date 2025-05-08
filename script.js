@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
 
 // --- CONFIG ---
 const SUPABASE_URL = "https://oybyvwcpyegfeedepktt.supabase.co";
-const SUPABASE_ANON_KEY = "your-real-anon-key-here"; // make sure this is real!
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95Ynl2d2NweWVnZmVlZGVwa3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2Njc4MjEsImV4cCI6MjA2MDI0MzgyMX0.pn9ka-JxwN_psXlqMKash9iDuP6lEsYvBCmOEJcFDP0"; // make sure this is real!
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
