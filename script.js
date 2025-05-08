@@ -10,9 +10,10 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = localStorage.getItem('currentUser') || "Anna";
 let userButtons;
 
-let currentCategoryFilter = "";
+let currentCategoryFilter = []; // ARRAY, only declare ONCE
 let currentDateFrom = "";
 let currentDateTo = "";
+
 
 // --- DOM ---
 const currentUserSpan = document.getElementById('current-user');
@@ -117,9 +118,10 @@ async function loadTransactions(userFilter) {
         query = query.eq('user_name', userFilter);
     }
 
-    if (currentCategoryFilter) {
-        query = query.eq('category', currentCategoryFilter);
+    if (currentCategoryFilter.length > 0) {
+        query = query.in('category', currentCategoryFilter);
     }
+
 
     if (currentDateFrom) {
         query = query.gte('date', currentDateFrom);
@@ -191,7 +193,15 @@ async function loadTransactions(userFilter) {
 
         transactionsTableBody.appendChild(row);
     });
+    const filterInfo = document.querySelector(".filter-info");
+
+    const categoriesText = currentCategoryFilter.length > 0 ? currentCategoryFilter.join(", ") : "All Categories";
+    const fromText = currentDateFrom || "the beginning";
+    const toText = currentDateTo || "now";
+    
+    filterInfo.textContent = `Viewing for [${categoriesText}] from ${fromText} to ${toText}.`;
     document.getElementById("filter-total").textContent = totalAmount.toFixed(2);
+
     updateCurrentBalance();
 }
 
@@ -226,18 +236,27 @@ async function updateCurrentBalance() {
 
 
 document.getElementById("apply-filter").addEventListener("click", () => {
-    currentCategoryFilter = document.getElementById("filter-category").value;
+    const checkboxes = document.querySelectorAll("#filter-category input[type='checkbox']");
+    currentCategoryFilter = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
     currentDateFrom = document.getElementById("filter-date-from").value;
     currentDateTo = document.getElementById("filter-date-to").value;
+
     loadTransactions(currentUser);
 });
 
+
+
 document.getElementById("clear-filter").addEventListener("click", () => {
-    currentCategoryFilter = "";
+    currentCategoryFilter = [];
     currentDateFrom = "";
     currentDateTo = "";
 
-    document.getElementById("filter-category").value = "";
+    const checkboxes = document.querySelectorAll("#filter-category input[type='checkbox']");
+    checkboxes.forEach(cb => cb.checked = false);
+
     document.getElementById("filter-date-from").value = "";
     document.getElementById("filter-date-to").value = "";
 
@@ -246,17 +265,34 @@ document.getElementById("clear-filter").addEventListener("click", () => {
 
 async function refreshCategoryFilter() {
     const { data: allCategories } = await db.from('categories').select('*').order('category_name');
-    const filterSelect = document.getElementById("filter-category");
+    const expenseContainer = document.getElementById("filter-category-expense");
+    const incomeContainer = document.getElementById("filter-category-income");
 
-    filterSelect.innerHTML = `<option value="">All Categories</option>`;
+    expenseContainer.innerHTML = "";
+    incomeContainer.innerHTML = "";
 
     (allCategories || []).forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat.category_name;
-        opt.textContent = cat.category_name;
-        filterSelect.appendChild(opt);
+        const container = cat.type === "expense" ? expenseContainer : incomeContainer;
+
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = cat.category_name;
+
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                currentCategoryFilter.push(checkbox.value);
+            } else {
+                currentCategoryFilter = currentCategoryFilter.filter(c => c !== checkbox.value);
+            }
+        });
+
+        label.appendChild(checkbox);
+        label.append(" " + cat.category_name);
+        container.appendChild(label);
     });
 }
+
 
 refreshCategoryFilter();
 setupUserButtons();
