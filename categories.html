@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <script defer src="categories.js"></script>
+</head>
+<body>
+    <h1>📦 Category Manager 📦</h1>
+
+    <p><a href="index.html">← Back to Budget Tracker</a></p>
+
+    <div class="form-container">
+        <h3>Add New Category</h3>
+        <select id="new-category-type">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+        </select>
+        <input type="text" id="new-category-name" placeholder="New Category Name">
+        <button id="add-category-btn">Add Category</button>
+    </div>
+
+    <div class="transaction-list">
+        <h3>Existing Categories</h3>
+        <ul id="categories-list"></ul>
+    </div>
+
+</body>
+</html>
