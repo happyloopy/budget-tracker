@@ -33,9 +33,13 @@ addTransactionBtn.addEventListener('click', async () => {
         return;
     }
 
-    await db.from('transactions').insert([
-        { user_name: currentUser, amount, type, category, note }
-    ]);
+const dateInput = document.getElementById('transaction-date').value;
+const date = dateInput ? new Date(dateInput) : new Date();
+
+await db.from('transactions').insert([
+    { user_name: currentUser, amount, type, category, note, date }
+]);
+
 
     await loadBalances();
     await loadTransactions(currentUser);
@@ -140,8 +144,17 @@ async function loadTransactions(userFilter) {
         row.appendChild(userCell);
 
         const dateCell = document.createElement('td');
-        dateCell.textContent = new Date(tx.date).toLocaleDateString();
+        const dateInput = document.createElement('input');
+        dateInput.type = "date";
+        dateInput.value = new Date(tx.date).toISOString().split('T')[0];
+        
+        dateInput.addEventListener('change', () => {
+            updateTransaction(tx.id, "date", dateInput.value);
+        });
+        
+        dateCell.appendChild(dateInput);
         row.appendChild(dateCell);
+
 
         const categoryCell = document.createElement('td');
         categoryCell.textContent = tx.category;
