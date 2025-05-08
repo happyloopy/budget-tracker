@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
 
 // --- CONFIG ---
 const SUPABASE_URL = "https://oybyvwcpyegfeedepktt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95Ynl2d2NweWVnZmVlZGVwa3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2Njc4MjEsImV4cCI6MjA2MDI0MzgyMX0.pn9ka-JxwN_psXlqMKash9iDuP6lEsYvBCmOEJcFDP0"; // make sure this is real!
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95Ynl2d2NweWVnZmVlZGVwa3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2Njc4MjEsImV4cCI6MjA2MDI0MzgyMX0.pn9ka-JxwN_psXlqMKash9iDuP6lEsYvBCmOEJcFDP0";
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -16,8 +16,6 @@ const beginningBalanceSpan = document.getElementById('beginning-balance');
 const currentBalanceSpan = document.getElementById('current-balance');
 const addTransactionBtn = document.getElementById('add-transaction-btn');
 const categoryContainer = document.getElementById("category-container");
-const addCategoryBtn = document.getElementById("add-category-btn");
-const categoriesList = document.getElementById("categories-list");
 
 // --- EVENTS ---
 addTransactionBtn.addEventListener('click', async () => {
@@ -45,7 +43,6 @@ addTransactionBtn.addEventListener('click', async () => {
 
 function setupUserButtons() {
     userButtons = document.querySelectorAll('.user-btn');
-
     userButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             currentUser = btn.dataset.user;
@@ -65,11 +62,9 @@ function updateUserDisplay() {
             btn.classList.remove('active');
         }
     });
-
     currentUserSpan.textContent = currentUser;
 }
 
-// --- Dynamic Category Input ---
 async function renderCategoryInput() {
     const type = document.getElementById("type").value;
     const { data: categories } = await db.from('categories').select('*').eq('type', type).order('category_name', { ascending: true });
@@ -77,7 +72,6 @@ async function renderCategoryInput() {
     if (categories.length > 0) {
         categoryContainer.innerHTML = `<select id="category"></select>`;
         const select = document.getElementById('category');
-
         categories.forEach(cat => {
             const opt = document.createElement('option');
             opt.value = cat.category_name;
@@ -91,7 +85,6 @@ async function renderCategoryInput() {
 
 document.getElementById("type").addEventListener("change", renderCategoryInput);
 
-// --- Balances ---
 async function loadBalances() {
     if (currentUser === "Joint") {
         beginningBalanceSpan.textContent = "N/A";
@@ -111,21 +104,17 @@ async function loadTransactions(userFilter) {
     transactionsTableBody.innerHTML = "";
 
     let query = db.from('transactions').select('*').order('date', { ascending: false });
-
     if (userFilter !== "Joint") {
         query = query.eq('user_name', userFilter);
     }
 
     const { data } = await query;
 
-    (data || []).forEach(tx => {
+    (data || []).forEach(async tx => {
         const row = document.createElement('tr');
 
-        if (tx.user_name === "Anna") {
-            row.classList.add("anna-row");
-        } else if (tx.user_name === "Husband") {
-            row.classList.add("husband-row");
-        }
+        if (tx.user_name === "Anna") row.classList.add("anna-row");
+        if (tx.user_name === "Husband") row.classList.add("husband-row");
 
         const userCell = document.createElement('td');
         userCell.textContent = tx.user_name;
@@ -136,9 +125,22 @@ async function loadTransactions(userFilter) {
         row.appendChild(dateCell);
 
         const categoryCell = document.createElement('td');
-        categoryCell.textContent = tx.category;
-        categoryCell.contentEditable = "true";
-        categoryCell.addEventListener("blur", () => updateTransaction(tx.id, "category", categoryCell.textContent));
+        const { data: validCategories } = await db.from('categories').select('*').eq('type', tx.type).order('category_name', { ascending: true });
+        const select = document.createElement('select');
+
+        (validCategories || []).forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.category_name;
+            option.textContent = cat.category_name;
+            if (cat.category_name === tx.category) option.selected = true;
+            select.appendChild(option);
+        });
+
+        select.addEventListener('change', () => {
+            updateTransaction(tx.id, "category", select.value);
+        });
+
+        categoryCell.appendChild(select);
         row.appendChild(categoryCell);
 
         const incomeCell = document.createElement('td');
@@ -193,7 +195,6 @@ async function deleteTransaction(id) {
 
 async function updateCurrentBalance() {
     let { data: transactions } = await db.from('transactions').select('*').eq('user_name', currentUser);
-
     if (currentUser === "Joint") {
         const { data: all } = await db.from('transactions').select('*');
         transactions = all;
@@ -202,58 +203,17 @@ async function updateCurrentBalance() {
     const { data: balanceRow } = await db.from('balances').select('*').eq('user_name', currentUser).single();
     let balance = balanceRow ? balanceRow.amount : 0;
 
-    if (transactions) {
-        transactions.forEach(tx => {
-            if (tx.type === 'income') {
-                balance += tx.amount;
-            } else {
-                balance -= tx.amount;
-            }
-        });
-    }
+    (transactions || []).forEach(tx => {
+        if (tx.type === 'income') balance += tx.amount;
+        else balance -= tx.amount;
+    });
 
     currentBalanceSpan.textContent = balance.toFixed(2);
-}
-
-// --- Category Management ---
-addCategoryBtn.addEventListener('click', async () => {
-    const type = document.getElementById("new-category-type").value;
-    const name = document.getElementById("new-category-name").value.trim();
-
-    if (!name) {
-        alert("Please enter category name");
-        return;
-    }
-
-    await db.from('categories').insert([{ type, category_name: name }]);
-    document.getElementById("new-category-name").value = "";
-    loadCategories();
-    renderCategoryInput(); // refresh category input
-});
-
-async function loadCategories() {
-    const { data } = await db.from('categories').select('*').order('type').order('category_name');
-    categoriesList.innerHTML = "";
-
-    (data || []).forEach(cat => {
-        const li = document.createElement('li');
-        li.textContent = `${cat.type.toUpperCase()}: ${cat.category_name}`;
-        const btn = document.createElement('button');
-        btn.textContent = "Delete";
-        btn.addEventListener('click', async () => {
-            await db.from('categories').delete().eq('id', cat.id);
-            loadCategories();
-            renderCategoryInput();
-        });
-        li.appendChild(btn);
-        categoriesList.appendChild(li);
-    });
 }
 
 setupUserButtons();
 renderCategoryInput();
 loadBalances();
 loadTransactions(currentUser);
-loadCategories();
 
 });
