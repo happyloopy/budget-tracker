@@ -6,16 +6,17 @@
     <title>My Budget Tracker</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/@supabase/supabase-js"></script>
-    <script defer src="script.js"></script>
 </head>
 <body>
     <h1>🌸 Budget Tracker 🌸</h1>
+
     <div class="switch-user">
         <button class="user-btn" data-user="Anna">Anna 👧</button>
         <button class="user-btn" data-user="Husband">Husband 👦</button>
         <button class="user-btn" data-user="Joint">Joint 👫</button>
     </div>
 
+    <p>Current User: <span id="current-user"></span></p>
 
     <div class="balances">
         <h2>Beginning Balance: $<span id="beginning-balance">0</span></h2>
@@ -51,5 +52,8 @@
         </tbody>
     </table>
 </div>
+
+<!-- Script loaded at the bottom for SAFETY -->
+<script src="script.js"></script>
 </body>
 </html>
