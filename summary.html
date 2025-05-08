@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary Report</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <script defer src="summary.js"></script>
+</head>
+<body>
+
+<h1>📊 Summary Report 📊</h1>
+
+<p><a href="index.html">← Back to Budget Tracker</a></p>
+
+<div class="summary-container">
+    <h2>Filter Summary</h2>
+    <select id="user-filter">
+        <option value="">All Users</option>
+        <option value="Anna">Anna</option>
+        <option value="Husband">Husband</option>
+        <option value="Joint">Joint</option>
+    </select>
+
+    <input type="date" id="from-date"> to
+    <input type="date" id="to-date">
+
+    <button id="load-summary">Load Summary</button>
+    <button id="export-csv" class="export-btn">Export CSV</button>
+
+    <h3>Summary Results</h3>
+    <table class="summary-table" id="summary-table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Total Income</th>
+                <th>Total Expense</th>
+                <th>Net</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+</body>
+</html>
