@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://oybyvwcpyegfeedepktt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95Ynl2d2NweWVnZmVlZGVwa3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2Njc4MjEsImV4cCI6MjA2MDI0MzgyMX0.pn9ka-JxwN_psXlqMKash9iDuP6lEsYvBCmOEJcFDP0";
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -7,53 +7,103 @@ document.getElementById("load-summary").addEventListener("click", loadSummary);
 document.getElementById("export-csv").addEventListener("click", exportCSV);
 
 async function loadSummary() {
-    const user = document.getElementById("user-filter").value;
-    const from = document.getElementById("from-date").value;
-    const to = document.getElementById("to-date").value;
 
+    // --- GET FILTERS ---
+    const selectedUser = document.getElementById("user-filter").value;
+    const mode = document.getElementById("summary-mode").value;
+
+    let dateFrom = document.getElementById("summary-date-from").value;
+    let dateTo = document.getElementById("summary-date-to").value;
+
+    if (mode === "weekly") {
+        const today = new Date();
+        const lastWeek = new Date();
+        lastWeek.setDate(today.getDate() - 7);
+        dateFrom = lastWeek.toISOString().split("T")[0];
+        dateTo = today.toISOString().split("T")[0];
+    } 
+    else if (mode === "monthly") {
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        dateFrom = firstDay.toISOString().split("T")[0];
+        dateTo = today.toISOString().split("T")[0];
+    }
+
+    // --- LOAD ALL CATEGORIES ---
+    const { data: allCategories } = await db.from('categories').select('*');
+
+    // --- LOAD TRANSACTIONS ---
     let query = db.from('transactions').select('*');
 
-    if (user) query = query.eq('user_name', user);
-    if (from) query = query.gte('date', from);
-    if (to) query = query.lte('date', to);
+    if (selectedUser !== "All") {
+        query = query.eq('user_name', selectedUser);
+    }
+    if (dateFrom) {
+        query = query.gte('date', dateFrom);
+    }
+    if (dateTo) {
+        query = query.lte('date', dateTo);
+    }
 
-    const { data } = await query;
+    const { data: transactions } = await query;
 
-    const categories = {};
-    (data || []).forEach(tx => {
-        if (!categories[tx.category]) {
-            categories[tx.category] = { income: 0, expense: 0 };
-        }
+    // --- BUILD SUMMARY ---
+    const summary = {};
 
-        if (tx.type === "income") {
-            categories[tx.category].income += tx.amount;
-        } else {
-            categories[tx.category].expense += tx.amount;
+    // Add all categories FIRST
+    (allCategories || []).forEach(cat => {
+        summary[cat.category_name] = {
+            type: cat.type,
+            income: 0,
+            expense: 0
+        };
+    });
+
+    // Add transaction amounts
+    (transactions || []).forEach(tx => {
+        if (summary[tx.category]) {
+            if (tx.type === "income") {
+                summary[tx.category].income += tx.amount;
+            } else {
+                summary[tx.category].expense += tx.amount;
+            }
         }
     });
 
+    // --- RENDER TO TABLE ---
     const tbody = document.querySelector("#summary-table tbody");
     tbody.innerHTML = "";
 
     let totalIncome = 0;
     let totalExpense = 0;
 
-    Object.keys(categories).forEach(category => {
-        const income = categories[category].income;
-        const expense = categories[category].expense;
-        const net = income - expense;
-
-        totalIncome += income;
-        totalExpense += expense;
+    Object.keys(summary).forEach(catName => {
+        const data = summary[catName];
 
         const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${category}</td>
-            <td class="summary-income">$${income.toFixed(2)}</td>
-            <td class="summary-expense">$${expense.toFixed(2)}</td>
-            <td>${net >= 0 ? "+" : ""}$${net.toFixed(2)}</td>
-        `;
+
+        const catCell = document.createElement("td");
+        catCell.textContent = catName;
+        row.appendChild(catCell);
+
+        const incomeCell = document.createElement("td");
+        incomeCell.textContent = `$${data.income.toFixed(2)}`;
+        incomeCell.style.color = "green";
+        row.appendChild(incomeCell);
+
+        const expenseCell = document.createElement("td");
+        expenseCell.textContent = `$${data.expense.toFixed(2)}`;
+        expenseCell.style.color = "red";
+        row.appendChild(expenseCell);
+
+        const netCell = document.createElement("td");
+        netCell.textContent = (data.income - data.expense).toFixed(2);
+        row.appendChild(netCell);
+
         tbody.appendChild(row);
+
+        totalIncome += data.income;
+        totalExpense += data.expense;
     });
 
     const totalRow = document.createElement("tr");
