@@ -291,10 +291,64 @@ async function refreshCategoryFilter() {
     });
 }
 
+async function loadUpcomingRecurring() {
+    const container = document.getElementById("recurring-section");
+    if (!container) return;
+
+    const today = new Date();
+    const { data } = await db.from("recurring").select("*");
+
+    const upcoming = (data || [])
+        .map(tx => {
+            const dueDate = new Date(tx.date);
+            const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+            return {
+                ...tx,
+                dueDate: dueDate.toLocaleDateString(undefined, { month: "long", day: "numeric" }),
+                daysLeft
+            };
+        })
+        .filter(tx => tx.daysLeft >= 0)
+        .sort((a, b) => a.daysLeft - b.daysLeft);
+
+    if (upcoming.length === 0) {
+        container.innerHTML = `<p>No upcoming recurring transactions 💅</p>`;
+        return;
+    }
+
+    const table = document.createElement("table");
+    table.className = "recurring-table";
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Days Left</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${upcoming.map(tx => `
+                <tr>
+                    <td>${tx.name}</td>
+                    <td>$${tx.amount.toFixed(2)}</td>
+                    <td>${tx.dueDate}</td>
+                    <td>${tx.daysLeft} day(s)</td>
+                </tr>
+            `).join("")}
+        </tbody>
+    `;
+
+    container.innerHTML = `<h2>💡 Upcoming Recurring Transactions</h2>`;
+    container.appendChild(table);
+}
+
 refreshCategoryFilter();
 setupUserButtons();
 renderCategoryInput();
+loadTransactions(currentUser);
 loadBalances();
 loadTransactions(currentUser);
+loadUpcomingRecurring();
 
 });
