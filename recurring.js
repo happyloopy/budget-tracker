@@ -4,64 +4,96 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- DOM ---
+const tbody = document.getElementById("rec-table-body");
 const addBtn = document.getElementById("add-rec");
-const tableBody = document.getElementById("rec-table-body");
 
-// --- Add Recurring Transaction ---
 addBtn.addEventListener("click", async () => {
   const name = document.getElementById("rec-name").value;
   const amount = parseFloat(document.getElementById("rec-amount").value);
   const date = document.getElementById("rec-date").value;
-  const user = document.getElementById("rec-user").value;
 
   if (!name || isNaN(amount) || !date) {
-    alert("Fill out all fields correctly!");
+    alert("Fill in all fields!");
     return;
   }
 
-  await db.from("recurring").insert([{ name, amount, date, user_name: user }]);
+  await db.from("recurring").insert([{ name, amount, date }]);
   loadRecurring();
-  document.getElementById("rec-name").value = "";
-  document.getElementById("rec-amount").value = "";
-  document.getElementById("rec-date").value = "";
 });
 
-// --- Load Recurring Transactions ---
 async function loadRecurring() {
-  const { data } = await db.from("recurring").select("*").order("date");
+  const { data } = await db.from("recurring").select("*").order("date", { ascending: true });
+  tbody.innerHTML = "";
 
-  tableBody.innerHTML = "";
+  const today = new Date();
 
-  (data || []).forEach(item => {
-    const tr = document.createElement("tr");
+  (data || []).forEach(entry => {
+    const row = document.createElement("tr");
 
-    const daysLeft = Math.ceil((new Date(item.date) - new Date()) / (1000 * 60 * 60 * 24));
+    // Editable Name
+    const nameCell = document.createElement("td");
+    nameCell.contentEditable = true;
+    nameCell.textContent = entry.name;
+    nameCell.addEventListener("blur", () =>
+      updateEntry(entry.id, "name", nameCell.textContent)
+    );
+    row.appendChild(nameCell);
 
-    tr.innerHTML = `
-      <td>${item.user_name}</td>
-      <td contenteditable="true" onblur="updateRec(${item.id}, 'name', this.textContent)">${item.name}</td>
-      <td contenteditable="true" onblur="updateRec(${item.id}, 'amount', parseFloat(this.textContent))">$${item.amount.toFixed(2)}</td>
-      <td><input type="date" value="${item.date}" onchange="updateRec(${item.id}, 'date', this.value)" /></td>
-      <td>${daysLeft} day(s)</td>
-      <td><button onclick="deleteRec(${item.id})">🗑️ Delete</button></td>
-    `;
-    tableBody.appendChild(tr);
+    // Editable Amount
+    const amountCell = document.createElement("td");
+    amountCell.contentEditable = true;
+    amountCell.textContent = entry.amount.toFixed(2);
+    amountCell.addEventListener("blur", () =>
+      updateEntry(entry.id, "amount", parseFloat(amountCell.textContent))
+    );
+    row.appendChild(amountCell);
+
+    // Editable Date
+    const dateCell = document.createElement("td");
+    const dateInput = document.createElement("input");
+    dateInput.type = "date";
+    dateInput.value = entry.date;
+    dateInput.addEventListener("change", () =>
+      updateEntry(entry.id, "date", dateInput.value)
+    );
+    dateCell.appendChild(dateInput);
+    row.appendChild(dateCell);
+
+    // Days Remaining
+    const dateObj = new Date(entry.date);
+    let daysDiff = Math.ceil((dateObj - today) / (1000 * 60 * 60 * 24));
+    if (daysDiff < 0) {
+      // Auto-forward 1 month
+      const newDate = new Date(dateObj.setMonth(dateObj.getMonth() + 1));
+      const newStr = newDate.toISOString().split("T")[0];
+      updateEntry(entry.id, "date", newStr);
+      daysDiff = Math.ceil((newDate - today) / (1000 * 60 * 60 * 24));
+    }
+
+    const daysCell = document.createElement("td");
+    daysCell.textContent = `${daysDiff} day${daysDiff !== 1 ? "s" : ""}`;
+    row.appendChild(daysCell);
+
+    // Delete Button
+    const delCell = document.createElement("td");
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "🗑";
+    delBtn.addEventListener("click", () => deleteEntry(entry.id));
+    delCell.appendChild(delBtn);
+    row.appendChild(delCell);
+
+    tbody.appendChild(row);
   });
 }
 
-// --- Update Entry ---
-async function updateRec(id, field, value) {
+async function updateEntry(id, field, value) {
   await db.from("recurring").update({ [field]: value }).eq("id", id);
   loadRecurring();
 }
 
-// --- Delete Entry ---
-async function deleteRec(id) {
-  if (confirm("Are you sure you want to delete this recurring transaction?")) {
-    await db.from("recurring").delete().eq("id", id);
-    loadRecurring();
-  }
+async function deleteEntry(id) {
+  await db.from("recurring").delete().eq("id", id);
+  loadRecurring();
 }
 
 loadRecurring();
