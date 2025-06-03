@@ -298,23 +298,29 @@ async function loadUpcomingRecurring() {
     const today = new Date();
     const { data } = await db.from("recurring").select("*");
 
-    const upcoming = (data || [])
-        .map(tx => {
-            const dueDate = new Date(tx.date);
-            const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-            return {
-                ...tx,
-                dueDate: dueDate.toLocaleDateString(undefined, { month: "long", day: "numeric" }),
-                daysLeft
-            };
-        })
-        .filter(tx => tx.daysLeft >= 0)
-        .sort((a, b) => a.daysLeft - b.daysLeft);
+    const updatedEntries = [];
 
-    if (upcoming.length === 0) {
-        container.innerHTML = `<p>No upcoming recurring transactions 💅</p>`;
-        return;
+    const upcoming = (data || []).map(entry => {
+        let dueDate = new Date(entry.date);
+        while (dueDate < today) {
+            dueDate.setMonth(dueDate.getMonth() + 1);
+            updatedEntries.push({ id: entry.id, date: dueDate.toISOString().split("T")[0] });
+        }
+        const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+        return {
+            ...entry,
+            dueDate,
+            formattedDate: dueDate.toLocaleDateString(undefined, { month: "long", day: "numeric" }),
+            daysLeft
+        };
+    });
+
+    // Batch update auto-forwarded dates
+    for (const u of updatedEntries) {
+        await db.from("recurring").update({ date: u.date }).eq("id", u.id);
     }
+
+    upcoming.sort((a, b) => a.dueDate - b.dueDate);
 
     const table = document.createElement("table");
     table.className = "recurring-table";
@@ -329,19 +335,22 @@ async function loadUpcomingRecurring() {
         </thead>
         <tbody>
             ${upcoming.map(tx => `
-                <tr>
+                <tr style="color: ${tx.daysLeft < 0 ? 'red' : 'inherit'};">
                     <td>${tx.name}</td>
                     <td>$${tx.amount.toFixed(2)}</td>
-                    <td>${tx.dueDate}</td>
-                    <td>${tx.daysLeft} day(s)</td>
+                    <td>${tx.formattedDate}</td>
+                    <td>${tx.daysLeft} day${tx.daysLeft !== 1 ? "s" : ""}</td>
                 </tr>
             `).join("")}
         </tbody>
     `;
 
-    container.innerHTML = `<h2>💡 Upcoming Recurring Transactions</h2>`;
+    const todayText = today.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+    container.innerHTML = `<h2>💡 Upcoming Recurring Transactions (Today: ${todayText})</h2>`;
     container.appendChild(table);
 }
+
 
 refreshCategoryFilter();
 setupUserButtons();
