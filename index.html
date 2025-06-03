@@ -20,69 +20,70 @@
 
     <p>Current User: <span id="current-user"></span></p>
 
-<p><a href="categories.html" target="_blank"><button>Manage Categories</button></a></p>
-<p><a href="summary.html" target="_blank"><button>View Summary Report</button></a></p>
-    
+    <p><a href="categories.html" target="_blank"><button>Manage Categories</button></a></p>
+    <p><a href="summary.html" target="_blank"><button>View Summary Report</button></a></p>
+    <p><a href="recurring.html" target="_blank"><button>Manage Recurring</button></a></p>
+
     <div class="balances">
         <h2>Beginning Balance: $<span id="beginning-balance" contenteditable="true">0</span></h2>
         <h2>Current Balance: $<span id="current-balance">0</span></h2>
     </div>
 
-<div class="form-container">
-    <input type="date" id="transaction-date" placeholder="Date (optional)">
-    <input type="number" id="amount" placeholder="Amount">
-    <select id="type">
-        <option value="expense">Expense</option>
-        <option value="income">Income</option>
-    </select>
-    <div id="category-container"></div>
-    <input type="text" id="note" placeholder="Note (optional)">
-    <button id="add-transaction-btn">Add Transaction</button>
-</div>
+    <div class="form-container">
+        <input type="date" id="transaction-date" placeholder="Date (optional)">
+        <input type="number" id="amount" placeholder="Amount">
+        <select id="type">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+        </select>
+        <div id="category-container"></div>
+        <input type="text" id="note" placeholder="Note (optional)">
+        <button id="add-transaction-btn">Add Transaction</button>
+    </div>
 
-<div class="filter-bar">
-    <h3>Filter Transactions</h3>
-    <div class="filter-categories-container">
-        <div class="filter-category-section">
-            <h4>Expense Categories</h4>
-            <div id="filter-category-expense" class="filter-category-list"></div>
+    <div class="filter-bar">
+        <h3>Filter Transactions</h3>
+        <div class="filter-categories-container">
+            <div class="filter-category-section">
+                <h4>Expense Categories</h4>
+                <div id="filter-category-expense" class="filter-category-list"></div>
+            </div>
+            <div class="filter-category-section">
+                <h4>Income Categories</h4>
+                <div id="filter-category-income" class="filter-category-list"></div>
+            </div>
         </div>
-        <div class="filter-category-section">
-            <h4>Income Categories</h4>
-            <div id="filter-category-income" class="filter-category-list"></div>
+
+        <input type="date" id="filter-date-from">
+        <input type="date" id="filter-date-to">
+        <button id="apply-filter">Apply Filter</button>
+        <button id="clear-filter">Clear Filter</button>
+
+        <div class="filter-info"></div>
+        <div class="filter-total">
+            <strong>Total (filtered):</strong> $<span id="filter-total">0.00</span>
         </div>
     </div>
 
-    <input type="date" id="filter-date-from">
-    <input type="date" id="filter-date-to">
-    <button id="apply-filter">Apply Filter</button>
-    <button id="clear-filter">Clear Filter</button>
-
-    <div class="filter-info"></div>
-    <div class="filter-total">
-        <strong>Total (filtered):</strong> $<span id="filter-total">0.00</span>
+    <div class="transaction-list" id="transaction-list">
+        <h2>Transactions</h2>
+        <table id="transactions">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Income ($)</th>
+                    <th>Expense ($)</th>
+                    <th>Note</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
-</div>
 
-<div class="transaction-list" id="transaction-list">
-    <h2>Transactions</h2>
-    <table id="transactions">
-        <thead>
-    <tr>
-        <th>User</th>
-        <th>Date</th>
-        <th>Category</th>
-        <th>Income ($)</th>
-        <th>Expense ($)</th>
-        <th>Note</th>
-        <th>Delete</th>
-    </tr>
-</thead>
-        <tbody>
-        </tbody>
-    </table>
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
