@@ -1,43 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Manage Recurring Transactions</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Recurring Transactions</title>
+  <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
   <script defer src="recurring.js"></script>
 </head>
 <body>
   <h1>🔁 Manage Recurring Transactions</h1>
-  <p><a href="index.html">← Back to Budget Tracker</a></p>
+  <p><a href="index.html">← Back to Homepage</a></p>
 
-  <div class="summary-container">
-    <h2>Add New Recurring Transaction</h2>
-    <input type="text" id="rec-name" placeholder="Name (e.g. Rent)" />
-    <input type="number" id="rec-amount" placeholder="Amount" />
-    <input type="date" id="rec-date" />
-    <select id="rec-user">
-      <option value="Anna">Anna</option>
-      <option value="Husband">Husband</option>
-      <option value="Joint">Joint</option>
-    </select>
-    <button id="add-rec">➕ Add</button>
-
-    <h2>Existing Entries</h2>
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Name</th>
-          <th>Amount</th>
-          <th>Due Date</th>
-          <th>Days Left</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="rec-table-body"></tbody>
-    </table>
+  <div class="form-box">
+    <input type="text" id="rec-name" placeholder="Name">
+    <input type="number" id="rec-amount" placeholder="Amount">
+    <input type="date" id="rec-date">
+    <button id="add-rec">Add Transaction</button>
   </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Days Left</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody id="rec-table-body"></tbody>
+  </table>
 </body>
 </html>
