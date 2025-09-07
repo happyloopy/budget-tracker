@@ -19,7 +19,8 @@ const beginningBalanceSpan = document.getElementById('beginning-balance');
 const currentBalanceSpan = document.getElementById('current-balance');
 const addTransactionBtn = document.getElementById('add-transaction-btn');
 const categoryContainer = document.getElementById("category-container");
-
+beginningBalanceSpan.setAttribute('contenteditable', 'true');
+    
 // --- Beginning Balance Edit ---
 beginningBalanceSpan.addEventListener("blur", saveBeginningBalance);
 beginningBalanceSpan.addEventListener("keydown", (e) => {
@@ -30,15 +31,37 @@ beginningBalanceSpan.addEventListener("keydown", (e) => {
 });
 
 async function saveBeginningBalance() {
-    const value = parseFloat(beginningBalanceSpan.textContent);
-    if (isNaN(value)) {
-        alert("Invalid number!");
-        loadBalances();
-        return;
-    }
-    await db.from('balances').upsert([{ user_name: currentUser, amount: value }]);
-    updateCurrentBalance();
+  // allow $ and commas, keep only digits, dot, minus
+  const raw = beginningBalanceSpan.textContent || "";
+  const cleaned = parseFloat(raw.replace(/[^0-9.\-]/g, ""));
+
+  if (Number.isNaN(cleaned)) {
+    alert("Invalid number!");
+    await loadBalances(); // reset to last saved value
+    return;
+  }
+
+  // check if a row exists for the current user
+  const { data: existing, error: selErr } = await db
+    .from('balances')
+    .select('user_name')
+    .eq('user_name', currentUser)
+    .maybeSingle();
+
+  if (selErr) {
+    console.error(selErr);
+  }
+
+  if (existing) {
+    await db.from('balances').update({ amount: cleaned }).eq('user_name', currentUser);
+  } else {
+    await db.from('balances').insert({ user_name: currentUser, amount: cleaned });
+  }
+
+  await loadBalances();        // refresh displayed beginning balance
+  await updateCurrentBalance();// recompute current balance
 }
+
 
 // --- EVENTS ---
 addTransactionBtn.addEventListener('click', async () => {
@@ -108,11 +131,22 @@ async function renderCategoryInput() {
 document.getElementById("type").addEventListener("change", renderCategoryInput);
 
 async function loadBalances() {
-    const { data } = await db.from('balances').select('*').eq('user_name', currentUser).single();
-    const balance = data ? data.amount : 0;
-    beginningBalanceSpan.textContent = balance.toFixed(2);
-    updateCurrentBalance();
+  const { data, error } = await db
+    .from('balances')
+    .select('*')
+    .eq('user_name', currentUser)
+    .order('id', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error(error);
+  }
+
+  const balance = (data && data[0]) ? Number(data[0].amount) : 0;
+  beginningBalanceSpan.textContent = balance.toFixed(2);
+  updateCurrentBalance();
 }
+
 
 async function loadTransactions(userFilter) {
     const transactionsTableBody = document.querySelector("#transactions tbody");
@@ -228,18 +262,38 @@ async function deleteTransaction(id) {
 }
 
 async function updateCurrentBalance() {
-    let { data: transactions } = await db.from('transactions').select('*').eq('user_name', currentUser);
-    if (currentUser === "Joint") transactions = (await db.from('transactions').select('*')).data;
+  // get transactions for current user (or all if Joint)
+  let { data: transactions, error: txErr } = await db
+    .from('transactions')
+    .select('*')
+    .eq('user_name', currentUser);
 
-    const { data: balanceRow } = await db.from('balances').select('*').eq('user_name', currentUser).single();
-    let balance = balanceRow ? balanceRow.amount : 0;
+  if (currentUser === "Joint") {
+    const all = await db.from('transactions').select('*');
+    transactions = all.data || [];
+  }
 
-    (transactions || []).forEach(tx => {
-        balance += (tx.type === 'income') ? tx.amount : -tx.amount;
-    });
+  if (txErr) console.error(txErr);
 
-    currentBalanceSpan.textContent = balance.toFixed(2);
+  // get the most recent beginning balance row for this user
+  const { data: balRows, error: balErr } = await db
+    .from('balances')
+    .select('*')
+    .eq('user_name', currentUser)
+    .order('id', { ascending: false })
+    .limit(1);
+
+  if (balErr) console.error(balErr);
+
+  let balance = (balRows && balRows[0]) ? Number(balRows[0].amount) : 0;
+
+  (transactions || []).forEach(tx => {
+    balance += (tx.type === 'income') ? tx.amount : -tx.amount;
+  });
+
+  currentBalanceSpan.textContent = balance.toFixed(2);
 }
+
 
 document.getElementById("apply-filter").addEventListener("click", () => {
     const checkboxes = document.querySelectorAll("#filter-category-expense input[type='checkbox'], #filter-category-income input[type='checkbox']");
@@ -355,9 +409,9 @@ async function loadUpcomingRecurring() {
 refreshCategoryFilter();
 setupUserButtons();
 renderCategoryInput();
-loadTransactions(currentUser);
 loadBalances();
 loadTransactions(currentUser);
 loadUpcomingRecurring();
 
 });
+
